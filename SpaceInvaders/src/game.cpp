@@ -5,17 +5,29 @@ Game::Game()
     threadLvgl = new ThreadLvgl(30);
     threadLvgl->lock(); /* -------------------------------------- */
 
+    // Création de la fenetre principale et de sa feuille de style
     window =  lv_obj_create(lv_scr_act());
 
     static lv_style_t style_window;
     lv_style_init(&style_window);
-    lv_style_set_bg_color(&style_window, lv_color_hex(0x000000)); // C'est sensé être noir
+    lv_style_set_bg_color(&style_window, lv_color_hex(0x000000));
     lv_style_set_bg_opa(&style_window, LV_OPA_100);
     lv_style_set_border_width(&style_window, 2);
     lv_style_set_border_color(&style_window, lv_color_black());
     lv_style_set_radius(&style_window, 0);
 
+    lv_obj_set_size(window, 480, 272);
+    lv_obj_set_pos(window, 0, 0);
 
+    lv_obj_add_style(window, &style_window, 0);
+
+    // Désactiver le scroller horizontal
+    lv_obj_clear_flag(window, LV_OBJ_FLAG_SCROLLABLE);
+    // Désactiver le scroller vertical
+    lv_obj_set_scrollbar_mode(window, LV_SCROLLBAR_MODE_OFF);
+    // ------------------------------------------------------------
+
+    // Création et initialisation de la feuille de style pour les labels round, score et GameOver
     static lv_style_t style;
     lv_style_init(&style);
 
@@ -29,22 +41,31 @@ Game::Game()
     lv_style_set_text_color(&style, lv_palette_main(LV_PALETTE_BLUE));
     lv_style_set_text_letter_space(&style, 3);
     lv_style_set_text_line_space(&style, 20);
-    //lv_style_set_text_decor(&style, LV_TEXT_DECOR_UNDERLINE);
+    // ------------------------------------------------------------
 
+    // Création du label GameOver
+    gameover_label = lv_label_create(window);
+    
+    lv_obj_add_style(gameover_label, &style, 0);
 
-    lv_obj_set_size(window, 480, 272);
-    lv_obj_set_pos(window, 0, 0);
+    lv_obj_add_flag(gameover_label, LV_OBJ_FLAG_HIDDEN);
+    // ------------------------------------------------------------
 
-    lv_obj_add_style(window, &style_window, 0);
+    // On créer le label round
+    round_label = lv_label_create(lv_scr_act());
+    lv_obj_add_style(round_label, &style, 0);
+    lv_label_set_text(round_label, "Round: 0");
 
-    // Désactiver le scroller horizontal
-    lv_obj_clear_flag(window, LV_OBJ_FLAG_SCROLLABLE);
-    // Désactiver le scroller vertical
-    lv_obj_set_scrollbar_mode(window, LV_SCROLLBAR_MODE_OFF);
+    // On créer le label score
+    score_label = lv_label_create(lv_scr_act());
+    lv_obj_add_style(score_label, &style, 0);
+    lv_label_set_text(score_label, "Score: 0");
 
-    vaisseau = new Vaisseau(window);
-    projectile = new Projectile(window);
+    lv_obj_align(round_label, LV_ALIGN_TOP_MID, -100, 0);  // Ajuster la position du label round
+    lv_obj_align(score_label, LV_ALIGN_TOP_MID, 100, 0);   // Ajuster la position du label score
 
+    
+    // Création du canvas Ultime
     canvasUltime = lv_canvas_create(window);
 
     lv_canvas_set_buffer(canvasUltime, cbufultime, CANVAS_ULTIME_WIDTH, CANVAS_ULTIME_HEIGHT, LV_IMG_CF_INDEXED_1BIT);
@@ -52,27 +73,19 @@ Game::Game()
     lv_canvas_set_palette(canvasUltime, 0, lv_color_make(0, 0, 0));
     lv_obj_set_pos(canvasUltime, 450, (SCREEN_HEIGHT/2)-75);
 
-    
-    lv_style_init(&styleGameOver);
-    lv_style_set_text_font(&styleGameOver, LV_FONT_MONTSERRAT_32);  // Changer la police si nécessaire
-    lv_style_set_text_color(&styleGameOver, lv_color_white());
-
-    gameover_label = lv_label_create(window);
-    lv_obj_add_style(gameover_label, &style, 0);
-
-    lv_obj_add_flag(gameover_label, LV_OBJ_FLAG_HIDDEN);
-    
-
-
     c0_ultime.full = 0; // Transparent
     c1_ultime.full = 1; // White
-
-    resetUltime();
+    // ------------------------------------------------------------
     
+    vaisseau = new Vaisseau(window);        // Création de l'objet Vaisseau
+    projectile = new Projectile(window);    //Création de l'objet projectile
+
+    // On place les ennemis sur l'ecran en haut à gauche espacer chacun de 40 pixels
     for (short i=0; i<MAX_ENNEMIS; i++) {
         ennemies.emplace_back(window, -15 + i*40);
     }
 
+    // On initialise les atributs du jeu
     isReset = false;
     gameIsDone = false;
     counterEnemyDeath = 0;
@@ -82,20 +95,12 @@ Game::Game()
     score = 0;
     speedEnnemy = 500;
 
-    round_label = lv_label_create(lv_scr_act());
-    lv_obj_add_style(round_label, &style, 0);
-    lv_label_set_text(round_label, "Round: 0");
-
-    score_label = lv_label_create(lv_scr_act());
-    lv_obj_add_style(score_label, &style, 0);
-    lv_label_set_text(score_label, "Score: 0");
-
-    lv_obj_align(round_label, LV_ALIGN_TOP_MID, -100, 0);  // Ajuster les positions selon vos besoins
-    lv_obj_align(score_label, LV_ALIGN_TOP_MID, 100, 0);   // Ajuster les positions selon vos besoins
-
+    // On met ajour l'ultime et les labels 
+    resetUltime();
     update_round_label();
     update_score_label();
 
+    // On demare les différentes taches du jeu
     gameThread.start(callback(this, &Game::run));
     ennemiThread.start(callback(this, &Game::ennemiThreadFct));
     entrees.start(callback(this, &Game::lecture_entrees));
@@ -114,12 +119,13 @@ void Game::run()
     {
         threadLvgl->lock(); /* -------------------------------------- */
         //lecture_entrees();
-        vaisseauPos[0] = dx;
-        vaisseauPos[1] = dy;
+        vaisseauPos[0] = dx;    // On met à jour la position X du vaisseau
+        vaisseauPos[1] = dy;    // On met à jour la position Y dy vaisseau
 
-        
+        // Si le jeu est terminé, on affiche le label GameOver
         if (gameIsDone) {
             show_game_over(round, score);
+            // On vérifie si le joueur veut relancer une partie
             if (isReset) {
                 reset();
             }
@@ -128,30 +134,31 @@ void Game::run()
             if (vaisseau->isActive()) {
                 vaisseau->setPos(vaisseauPos);
                 if (vaisseauIsAttack && !projectile->isActive()) {
-                    vaisseau->getPos(positionProjectile);
-                    projectile->setPos(positionProjectile);
-                    projectile->setActive();
+                    vaisseau->getPos(positionProjectile);           // On obien la position du vaisseau pour placer le projectile
+                    projectile->setPos(positionProjectile);         // On place le projectile
+                    projectile->setActive();                        // On lactile projectile
                 }
-
+                // On place le projectile ou l'ultime au niveau du vaisseau pour préparer le lancement
                 if (vaisseauIsUltime && isUltimeReady && !projectile->isActiveUltime()) {
-                    resetUltime();
-                    vaisseau->getPos(positionProjectile);
-                    projectile->setPosUltime(positionProjectile);
-                    projectile->setActiveUltime();
-                    isUltimeReady = false;
+                    resetUltime();                                  // On remet à 0 la bare d'ultime
+                    vaisseau->getPos(positionProjectile);           // On obtien la position du vaisseau pour placer le projectile ultime
+                    projectile->setPosUltime(positionProjectile);   // On active le projectile ultime
+                    projectile->setActiveUltime();                  // On lance l'ultime
+                    isUltimeReady = false;                          // L'ultime a été utilisé
                     bareUltime = 99;
                 }
-                    
+                // Vérifie si un projectile existe, si oui on le déplace vers le haut
                 if (projectile->isActive()) {
-                    projectile->fire();
+                    projectile->fire();         // On lance le projectile
                 }
-
+                // Vérifie si l'ultime a été utilisé (appuie bouton rouge)
                 if (projectile->isActiveUltime()){
-                    projectile->fireUltime();
+                    projectile->fireUltime();   // On lance le projectile ultime
                 }
 
                 for (auto& enemy : ennemies) {
                     if (enemy.visible) {
+                        // Vérifie si un projectile à touché un ennemi
                         if (checkCollision(enemy, *projectile) | checkCollisionUltime(enemy, *projectile)) {
                             if (projectile->isActive()) {
                                 projectile->deactivate();
@@ -168,9 +175,10 @@ void Game::run()
                                 counterEnemyDeath++;
                                 update_score_label();
                             }
-                            updateUltime();
+                            updateUltime();     // Met à jour la bare d'ultime du joueur
                                 
-                            }
+                        }
+                        // Vérifie sur un ennemi à toucher un le vaisseau, si oui GameOver
                         if (checkCollisionBtwShipAndEnemy(enemy, *vaisseau)) {
                             gameIsDone = true;
                             enemy.hide();
@@ -179,18 +187,16 @@ void Game::run()
                     }
                 }
                 if (counterEnemyDeath == MAX_ENNEMIS) {
+                    // Passe au round suivant et remet à 0 les ennemis (en position)
                     round++;
                     for (auto &enemy : ennemies) {
                         enemy.resetPosition(-15 + (counterEnemyDeath-1)*40,0);
-                        /*if (round%2 == 0) {
-                            enemy.maxPointDeVie +=1;
-                        }*/
 
                         counterEnemyDeath -=1;
                     }
-                    update_round_label();
-                    speedEnnemy -= 50;
-                    if (speedEnnemy <= 50) {
+                    update_round_label();       // Met à jour le label du round
+                    speedEnnemy -= 50;          // Augmente la vitesse des ennemis de 50ms à chaque round
+                    if (speedEnnemy <= 50) {    // Faire en sorte que la vitesse de dessend pas en dessous dee 50ms
                         speedEnnemy =  50;
                     }
                 }    
@@ -223,7 +229,6 @@ bool Game::checkCollision(const Ennemi& enemy, const Projectile& projectile) {
 }
 
 // Vérifie si l'ultime touche un ennemi
-// A faire (faire class projectile Ultime)
 bool Game::checkCollisionUltime(const Ennemi& enemy, const Projectile& projectile) {
     if (!enemy.isVisible() || !projectile.isActiveUltime()) {
         return false;
@@ -243,7 +248,6 @@ bool Game::checkCollisionUltime(const Ennemi& enemy, const Projectile& projectil
 
     return false;
 }
-// -----------------------------------------
 
 // Vérifie si un ennemi touche le vaisseau
 bool Game::checkCollisionBtwShipAndEnemy(const Ennemi& enemy, const Vaisseau& vaisseau) {
@@ -264,6 +268,7 @@ bool Game::checkCollisionBtwShipAndEnemy(const Ennemi& enemy, const Vaisseau& va
     return px < ex + ew && px + pw > ex && py < ey + eh && py + ph > ey;
 }
 
+// Cette méthode est un Thread qui gère le déplacement des ennemis
 void Game::ennemiThreadFct() {
     while (1) {
         threadLvgl->lock(); /* -------------------------------------- */
@@ -282,6 +287,7 @@ void Game::ennemiThreadFct() {
     }
 }
 
+// Cette méthode est un Thread qui permet de scrutter les entrées numérique de la carte
 void Game::lecture_entrees()
 {
     DigitalIn joyUp(D7);
@@ -294,37 +300,37 @@ void Game::lecture_entrees()
 
 
     if (!joyUp) {
-        dy = -3;
+        dy = -3;            // Le vaisseau se déplace vers le haute
     }
     else if (!joyDown) {
-        dy = 3;
+        dy = 3;             // Le vaisseau se déplaced vers le bas
     }
     else {
         dy = 0;
     }
 
     if (!joyLeft) {
-        dx = -3;
+        dx = -3;            // Le vaisseau se déplace vers la gauche
     }
     else if (!joyRight) {
-        dx = 3;
+        dx = 3;             // Le vaisseau se déplace ver la droite
     }
     else {
         dx = 0;
     }
     if (!bpStart) {
-        vaisseauIsAttack = true;
+        vaisseauIsAttack = true;    // Le vaisseau attaque
         if (!bpUltime) {
-            isReset = true;
+            isReset = true;         // Le joueur veut relancer une partie
         }
     }
     else {
         vaisseauIsAttack = false;
     }
     if (!bpUltime) {
-        vaisseauIsUltime = true;
+        vaisseauIsUltime = true;    // Le vaisseau utilie son ultime
         if (!bpStart) {
-            isReset = true;
+            isReset = true;         // Le joueur veut relancer une partie
         }
     }
     else {
@@ -332,6 +338,7 @@ void Game::lecture_entrees()
     }
 }
 
+// Cette méthode permet de mettre à jour la bare de progession de l'ultime utilisable par le bouton rouge
 void Game::updateUltime()
 {
     if (bareUltime > 0 && !isUltimeReady) {
@@ -349,6 +356,7 @@ void Game::updateUltime()
     }
 }
 
+// Cette méthode permet de remettre à 0 le canvas de l'ultime une fois utilisé
 void Game::resetUltime()
 {
     lv_canvas_fill_bg(canvasUltime, c0_ultime, LV_OPA_COVER);
@@ -376,6 +384,7 @@ void Game::resetUltime()
     }
 }
 
+// Cette méthode permet de mettre à jour le label qui affiche le round du joueur
 void Game::update_round_label()
 {
     if (round_label != NULL) {
@@ -385,6 +394,7 @@ void Game::update_round_label()
     }
 }
 
+// Cette méthode permet de mettre à jour le label qui affiche le score du joueur
 void Game::update_score_label()
 {
     if (score_label != NULL) {
@@ -394,6 +404,7 @@ void Game::update_score_label()
     }
 }
 
+// Cette méthode permet d'afficher le label Game Over une fois la partie terminé
 void Game::show_game_over(int nbround, int nbscore)
 {
     // Nettoyer l'écran
@@ -416,6 +427,7 @@ void Game::show_game_over(int nbround, int nbscore)
 
 }
 
+// Cette méthode permet de remettre à 0 les attributs du jeu avant de relancer une partie
 void Game::reset()
 {
     resetUltime();

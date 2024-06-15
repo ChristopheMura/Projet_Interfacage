@@ -15,16 +15,15 @@ public:
     Vaisseau(lv_obj_t *windows);
     ~Vaisseau();
 
-    void setPos(short *pos);
-    void getPos(short *pos);
-    void draw(void);
-    short getX() const { return posX; }
-    short getY() const { return posY; }
-    bool isActive() const { return active; }
-    lv_obj_t* getCanvas() { return canvas; }
-    void deactivate(void);
-    void updateUltime();
-    void reset();
+    void setPos(short *pos);                // Permet de définir la position du vaisseau
+    void getPos(short *pos);                // Permet de retourner la position du vaisseau
+    void draw(void);                        // Permet de dessiner le vaisseau dans le canvas
+    short getX() const { return posX; }     // permet de retourner la position en X du vaisseau
+    short getY() const { return posY; }     // Permet de retourner la position en Y du vaisseau
+    bool isActive() const { return active; }// Permet de savoir si le vaisseau est actif ou non
+    lv_obj_t* getCanvas() { return canvas; }// Permet de reoutrner le canvas du vaisseau
+    void deactivate(void);                  // Permet de désactiver le vaisseau
+    void reset();                           // Permet de remettre à 0 les atributs du vaisseau
 
 
 private:

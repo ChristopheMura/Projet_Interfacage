@@ -2,11 +2,13 @@
 
 Vaisseau::Vaisseau(lv_obj_t *windows)
 {
-    canvas = lv_canvas_create(windows/*lv_scr_act()*/);
+    canvas = lv_canvas_create(windows/*lv_scr_act()*/); // Création du canvas du vaisseau
 
+    // Initialisation de la position X et Y
     posX = SCREEN_WIDTH / 2 - CANVAS_VAISSEAU_WIDTH / 2;
     posY = SCREEN_HEIGHT - CANVAS_VAISSEAU_HEIGHT;
 
+    // Initialisation du canvas
     lv_canvas_set_buffer(canvas, cbuf, CANVAS_VAISSEAU_WIDTH, CANVAS_VAISSEAU_HEIGHT, LV_IMG_CF_INDEXED_1BIT);
     lv_canvas_set_palette(canvas, 1, lv_color_make(127, 0, 255));
     lv_canvas_set_palette(canvas, 0, lv_color_make(0, 0, 0));
@@ -16,6 +18,7 @@ Vaisseau::Vaisseau(lv_obj_t *windows)
     draw();
 }
 
+// Cette méthode permet de définir la position du vaisseau
 void Vaisseau::setPos(short *pos)
 {
     posX += pos[0];
@@ -36,12 +39,14 @@ void Vaisseau::setPos(short *pos)
     lv_obj_set_pos(canvas, posX, posY);
 }
 
+// Cette méthode permet de retourner par passage par reference la position du vaisseau (Utilisé pour placer les projectiles)
 void Vaisseau::getPos(short *pos)
 {
     pos[0] = posX;
     pos[1] = posY;
 }
 
+// Cette méthode permet de dessiner le vaisseau dans le canvas
 void Vaisseau::draw(void)
 {
     lv_color_t c0;
@@ -96,12 +101,14 @@ void Vaisseau::draw(void)
     }
 }
 
+// Cette méthode permet de désactiver le vaisseau
 void Vaisseau::deactivate(void)
 {
     lv_obj_add_flag(canvas, LV_OBJ_FLAG_HIDDEN);
     active = false;
 }
 
+// Cette méthode permet de remettre à 0 les attributs du vaisseau
 void Vaisseau::reset()
 {
     lv_obj_clear_flag(canvas, LV_OBJ_FLAG_HIDDEN);

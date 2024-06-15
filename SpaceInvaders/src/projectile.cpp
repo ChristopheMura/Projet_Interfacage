@@ -2,7 +2,10 @@
 
 Projectile::Projectile(lv_obj_t *windows)
 {
-    canvas = lv_canvas_create(windows/*lv_scr_act()*/);
+    canvas = lv_canvas_create(windows/*lv_scr_act()*/); // Création du canvas du projectile
+    canvasUltime = lv_canvas_create(windows);   //Création du canvas du projectile ultime
+
+    // Initialisation des atributs
     posX = 0;
     posY = 0;
     ultimePosX = 0;
@@ -10,24 +13,25 @@ Projectile::Projectile(lv_obj_t *windows)
     active = false;
     activeUltime = false;
 
-    canvasUltime = lv_canvas_create(windows);
-
+    // Initialisation du canvas du projectile
     lv_canvas_set_buffer(canvas, cbuf, CANVAS_PROJECTILE_WIDTH, CANVAS_PROJECTILE_HEIGHT, LV_IMG_CF_INDEXED_1BIT);
     lv_canvas_set_palette(canvas, 1, lv_color_make(127, 0, 255));
     lv_canvas_set_palette(canvas, 0, lv_color_make(0, 0, 0));
     lv_obj_set_pos(canvas, posX, posY);
 
+    // Initialisation du canvas du projectile ultime
     lv_canvas_set_buffer(canvasUltime, cbufUltime, CANVAS_PROJECTILE_ULTIME_WIDTH, CANVAS_PROJECTILE_ULTIME_HEIGHT, LV_IMG_CF_INDEXED_1BIT);
     lv_canvas_set_palette(canvasUltime, 1, lv_color_make(255, 0, 0));
     lv_canvas_set_palette(canvasUltime, 0, lv_color_make(0, 0, 0));
     lv_obj_set_pos(canvasUltime, ultimePosX, ultimeposY);
 
+    // Désactive les projectils pour éviter qu'il ne soient visible au lancement sans avoir préalablement tiré
     deactivate();
     deactivateUltime();
 
 }
 
-// ----------------------------------------------------------------------------
+// Ces méthodes permettent de définir la position des projectiles
 void Projectile::setPos(short pos[2])
 {
     posX = pos[0]+13;
@@ -43,7 +47,7 @@ void Projectile::setPosUltime(short pos[2])
     lv_obj_set_pos(canvasUltime, ultimePosX, ultimeposY);
 }
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// Ces méthodes permettent de désactiver les projectiles
 void Projectile::deactivate(void)
 {
     lv_obj_add_flag(canvas, LV_OBJ_FLAG_HIDDEN);
@@ -56,7 +60,7 @@ void Projectile::deactivateUltime(void)
     activeUltime = false;
 }
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// Ces méthodes permettent de déplacer les projectiles
 void Projectile::fire()
 {
     posY -= 5;
@@ -79,7 +83,7 @@ void Projectile::fireUltime()
     lv_obj_set_pos(canvasUltime, ultimePosX, ultimeposY);
 }
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// Ces méthodes permettnt de déssiner les projectiles
 void Projectile::draw()
 {
     lv_color_t c0;
@@ -128,7 +132,7 @@ void Projectile::drawUltime()
     }
 }
 // ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
+// Ces méthodes permettent de savoir si les projectiles sont actives
 void Projectile::setActive()
 {
     draw();

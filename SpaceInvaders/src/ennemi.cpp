@@ -2,7 +2,9 @@
 
 Ennemi::Ennemi(lv_obj_t *windows, short pPosX)
 {
-    canvas = lv_canvas_create(windows);
+    canvas = lv_canvas_create(windows); // Création du canvas de l'ennemi
+
+    // Initialisation des atributs de l'ennemi
     posX = pPosX;
     posY = 0;
     velocityX = 40;
@@ -11,14 +13,16 @@ Ennemi::Ennemi(lv_obj_t *windows, short pPosX)
     isOutofScreen = false;
     pointDeVie = 1;
     maxPointDeVie = 1;
+    visible = true;
 
+    // Initialisation du canvas
     lv_canvas_set_buffer(canvas, cbuf, CANVAS_ENNEMI_WIDTH, CANVAS_ENNEMI_HEIGHT, LV_IMG_CF_INDEXED_1BIT);
     lv_canvas_set_palette(canvas, 1, lv_color_make(255, 255, 0));
     lv_canvas_set_palette(canvas, 0, lv_color_make(0, 0, 0));
     lv_obj_set_pos(canvas, posX, posY);
 
-    draw();
-    visible = true;
+    draw(); // On dessine l'ennemi
+    
 }
 
 Ennemi::~Ennemi()
@@ -26,6 +30,7 @@ Ennemi::~Ennemi()
 
 }
 
+// Cette méthode permet de déplacement l'ennemi
 void Ennemi::move()
 {
     posX += velocityX;
@@ -44,7 +49,7 @@ void Ennemi::move()
     }
     lv_obj_set_pos(canvas, posX, posY);
 }
-
+// Cette méthode permet de dessiner l'ennemi
 void Ennemi::draw(void)
 {
     lv_color_t c0;
@@ -134,12 +139,14 @@ void Ennemi::draw(void)
     lv_canvas_set_px_color(canvas, 32, 18, c1);
 }
 
+// Cette méthode permet de cacher l'ennemi
 void Ennemi::hide(void) 
 {
     lv_obj_add_flag(canvas, LV_OBJ_FLAG_HIDDEN);
     visible = false;
 }
 
+// Cette méthode permet de reset la position de l'ennemi
 void Ennemi::resetPosition(short newX, short newY)
 {
     posX = newX;

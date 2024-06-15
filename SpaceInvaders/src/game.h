@@ -11,32 +11,33 @@
 #include "projectile.h"
 #include "ennemi.h"
 
-#define MAX_ENNEMIS 8
+#define MAX_ENNEMIS 8               // On définir le nombre max d'ennemis
 
-#define CANVAS_ULTIME_WIDTH 6
-#define CANVAS_ULTIME_HEIGHT 100
-
+#define CANVAS_ULTIME_WIDTH 6       // On définie la largeur du canvas d'ultime
+#define CANVAS_ULTIME_HEIGHT 100    // On définie la hauteur du canvas d'ultime
 
 
 class Game
 {
 public:
-    Game();
-    ~Game();
+    Game();     // Contructeur de la classe Game
+    ~Game();    // Destructeur de la classe Game
 
-    void run();                 // Thread boucle du jeu
-    void ennemiThreadFct();     // Thread deplacement des ennemis
+    void lecture_entrees();     // Tache pour lire les entrées
+    void run();                 // Tache boucle du jeu
+    void ennemiThreadFct();     // Tache deplacement des ennemis
 
     void reset(); // Fonction pour reset le jeu
 
-    void lecture_entrees();
-    void updateUltime();
-    void resetUltime();
+    void updateUltime();    // Méthode pour mettre à jour l'ultime
+    void resetUltime();     // Méthode pour reset l'ultime
 
+    // Méthodes pour gérer toutes les collisions
     bool checkCollision(const Ennemi& enemy, const Projectile& projectile);
     bool checkCollisionUltime(const Ennemi& enemy, const Projectile& projectile);
     bool checkCollisionBtwShipAndEnemy(const Ennemi& enemy, const Vaisseau& vaisseau);
 
+    // Méthodes de mise à jour des labels
     void update_round_label();
     void update_score_label();
     void show_game_over(int nbround, int nbscore);
@@ -59,26 +60,29 @@ private:
 
     bool isReset;
 
-    char buffGameOver[128];
-    lv_style_t styleGameOver;
+    char buffGameOver[128];     // Buffer pour ecrire dans le label GameOver
 
-    lv_obj_t * window;
+    lv_obj_t * window;          // Création de la fenetre principale du jeu
+
+    // Création des élément pour afficher le canvas de la bare d'ultime
     lv_obj_t *canvasUltime;
     lv_color_t cbufultime[LV_CANVAS_BUF_SIZE_INDEXED_1BIT(CANVAS_ULTIME_WIDTH, CANVAS_ULTIME_HEIGHT)];
     lv_color_t c0_ultime;
     lv_color_t c1_ultime;
 
-    Vaisseau *vaisseau;
-    Projectile *projectile;
-    std::vector<Ennemi> ennemies;
-    ThreadLvgl *threadLvgl;
-    Thread ennemiThread;
-    Thread gameThread;
-    Thread entrees;
+    Vaisseau *vaisseau;             // Création d'un objet vaisseau
+    Projectile *projectile;         // Création d'un objet projectile
+    std::vector<Ennemi> ennemies;   // Création des ennemis
 
-    lv_obj_t * round_label;
-    lv_obj_t * score_label;
-    lv_obj_t * gameover_label;
+    // Thread
+    ThreadLvgl *threadLvgl;     // Thread d'affiche pour LVGL
+    Thread ennemiThread;        // Thread de gestion des déplacement des ennemis
+    Thread gameThread;          // Thread de gestion du jeu
+    Thread entrees;             // Thread de gestion des entrées
+
+    lv_obj_t * round_label;     // Création d'un objet round_label
+    lv_obj_t * score_label;     // Création d'un objet score_label
+    lv_obj_t * gameover_label;  // Création d'un objet gameover_label
 };
 
 #endif

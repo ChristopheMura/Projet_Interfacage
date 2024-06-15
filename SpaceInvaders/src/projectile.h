@@ -18,29 +18,37 @@ public:
     Projectile(lv_obj_t *windows);
     ~Projectile();
 
-    void setPos(short pos[2]);
-    void setPosUltime(short pos[2]);
+    // Ces méthodes permettent de définir la position des projectiles
+    void setPos(short pos[2]);          
+    void setPosUltime(short pos[2]);    
 
-    void draw();
+    // Ces méthodes permettnt de déssiner les projectiles
+    void draw();                        
     void drawUltime();
 
+    // Ces méthodes permettent de savoir si les projectiles sont actives
     void setActive();
     void setActiveUltime();
 
+    // Ces méthodes permettent de déplacer les projectiles
     void fire();
     void fireUltime();
 
+    // Ces méthodes permettent de désactiver les projectiles
     void deactivate(void);
     void deactivateUltime(void);
 
+    // Ces méthodes permettent de retourner les position X et Y des projectiles
     short getX() const { return posX; }
     short getY() const { return posY; }
     short getUltimeX()const { return ultimePosX; }
     short getUltimeY() const { return ultimeposY; }
 
+    // Ces méthodes permettent de retourner les canvas des projectiles
     lv_obj_t* getCanvas() { return canvas; }
     lv_obj_t* getCanvasUltime() { return canvasUltime; }
 
+    // Ces méthodes permettent de savoir si les projectils sont actifs ou non
     bool isActive() const { return active; }
     bool isActiveUltime() const { return activeUltime; }
 
